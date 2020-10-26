@@ -1,0 +1,28 @@
+{
+  "name": "caballo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify index.js > bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cblgh/caballo.git"
+  },
+  "author": "",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/cblgh/caballo/issues"
+  },
+  "homepage": "https://github.com/cblgh/caballo#readme",
+  "dependencies": {
+    "browserify": "^17.0.0",
+    "hypercore": "^9.5.7",
+    "hypercore-crypto": "^2.1.1",
+    "hyperswarm-web": "^2.1.1",
+    "pump": "^3.0.0",
+    "random-access-memory": "^3.1.1"
+  }
+}

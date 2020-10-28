@@ -1,0 +1,51 @@
+:root {
+    --oscuro: #111;
+    --ligero: #f2f2f2;
+}
+
+body {
+    background: var(--oscuro);
+    color: var(--ligero);
+    margin: 2rem;
+}
+
+h1 {
+    font-size: 48pt;
+}
+
+#logo {
+    position: fixed;
+    right: 2rem;
+    bottom: 2rem;
+}
+
+textarea, input {
+	color: #f2f2f2;
+	background: #111;
+	border: #f2f2f2 solid 1px;
+	padding: 0.25rem;
+}
+
+#chat {
+    width: calc(100vw - 4rem);
+    height: calc(100vh - 17rem);
+	resize: none;
+}
+
+#name {
+	width: 8rem;
+	position: absolute;
+	bottom: 2rem;
+	padding: 1rem;
+	font-size: 0.75rem;
+}
+
+
+#input {
+	width: calc(100vw - 4rem - 2rem - 10rem);
+	padding: 1rem;
+	font-size: 0.75rem;
+	bottom: 2rem;
+	position: absolute;
+	margin-left: 10.5rem;
+}

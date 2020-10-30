@@ -62,20 +62,28 @@ var chatView = view(store, function (db) {
             db.batch(newDbEntries, next)
         },
         api: {
-            // We could choose to add some options to only get the latest messages + newly arriving ones in the future - just sketching for now,
+            // We could choose to add some options to only get the latest messages + newly arriving ones in the future,
             // and pull older ones while scrolling up in the future. Using pull-stream because I'm familiar with the interface
-            // and i find it more composable than traditional node streams
+            // and i find it more composable than traditional node streams. just sketching for now
             getMessageStream: function (core, cb) {
 
                 const p = Pushable()
 
-                db.on('put', function (key, value) {
-                    p.push(value)
-                })
-
                 db.createReadStream({live: true })
                     .on('data', function (data) {
                         p.push(data)
+                    })
+                    .on('end', function() {
+                        console.log("Old DB stream end!")
+
+                        db.on('batch', function (value) {
+                            console.log("Batch event value: ")
+                            console.log(value)
+
+                            value.forEach(p.push)
+                        })
+        
+
                     })
 
                 cb(null, p)
@@ -88,7 +96,7 @@ core.use('kv', chatView)
 
 function addMessage (msg) {
     const prev = document.getElementById("chat").textContent 
-    document.getElementById("chat").textContent = msg + "\n" + prev
+    document.getElementById("chat").textContent = prev + "\n" + msg
 }
 
 function setName (name) {
@@ -144,6 +152,7 @@ function initiate () {
 
                 writer.append(messageValue)
 
+                node.value = ""
             }
         });
     }

@@ -74,7 +74,10 @@ var chatView = view(store, function (db) {
                         p.push(data)
                     })
                     .on('end', function() {
-                        console.log("Old DB stream end!")
+                        // Hacky for now... This is new messages we receive and store in the DB live. Not sure if there's race condition issues
+                        // here...
+
+                        console.log("Old DB stream end! Pushing newly arriving messages to stream")
 
                         db.on('batch', function (value) {
                             console.log("Batch event value: ")
@@ -115,7 +118,7 @@ function initiate () {
 
             const payload = JSON.parse(data.value)
             addMessage(
-                payload.feedId + ": " + payload.message
+                payload.feedId.slice(0, 8) + ": " + payload.message
             )
         }))
 

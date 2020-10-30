@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "browserify index.js > bundle.js"
+    "build": "browserify --debug index.js > bundle.js"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,19 @@
     "hypercore": "^9.5.7",
     "hypercore-crypto": "^2.1.1",
     "hyperswarm-web": "^2.1.1",
+    "kappa-core": "^6.0.0",
+    "kappa-view": "^3.1.0",
+    "level-js": "^5.0.2",
+    "level-mem": "^5.0.1",
+    "levelup": "^4.4.0",
+    "memdb": "^1.3.1",
+    "pull-stream": "^3.6.14",
     "pump": "^3.0.0",
-    "random-access-memory": "^3.1.1"
+    "random-access-memory": "^3.1.1",
+    "stream-to-pull-stream": "^1.7.3"
+  },
+  "resolutions": {
+    "hypercore": "9.5.7",
+    "hypercore-protocol": "8.0.5"
   }
 }

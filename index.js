@@ -24,7 +24,10 @@ const pull = require('pull-stream')
 
 var levelup = require('levelup')
 var leveljs = require('level-js')
-var store = levelup(leveljs('caballo'))
+
+var store = levelup(leveljs("bigdata"))
+
+var Pushable = require('pull-pushable')
 
 function makeMessageModel(messageText) {
     return {
@@ -50,7 +53,7 @@ var chatView = view(store, function (db) {
                     // level DB sorts lexigraphically for streams, so we store by date and the coreId to make it unique
                     // todo: think of edge cases
                     key: value.date + coreId,
-                    value: value
+                    value: JSON.stringify(value)
                 }
 
                 return entry
@@ -59,25 +62,23 @@ var chatView = view(store, function (db) {
             db.batch(newDbEntries, next)
         },
         api: {
+            // We could choose to add some options to only get the latest messages + newly arriving ones in the future - just sketching for now,
+            // and pull older ones while scrolling up in the future. Using pull-stream because I'm familiar with the interface
+            // and i find it more composable than traditional node streams
             getMessageStream: function (core, cb) {
-                core.ready(function() {
-                    console.log("hm...")
 
-                    db.createReadStream({ gt:0, live: true })
-                        .on('data', function (data) {
-                            console.log(data.key, '=', data.value)
-                        })
-                        .on('close', function () {
-                            console.log('Stream closed')
-                          })
-                          .on('end', function () {
-                            console.log('Stream ended')
-                          })
+                const p = Pushable()
 
-                    // I find pull-stream streams to be more composable
-                    const stream = toPull.source(db.createReadStream({ live: true }))
-                    cb(null, stream)
+                db.on('put', function (key, value) {
+                    p.push(value)
                 })
+
+                db.createReadStream({live: true })
+                    .on('data', function (data) {
+                        p.push(data)
+                    })
+
+                cb(null, p)
             }
         }
     }
@@ -103,8 +104,10 @@ function initiate () {
         pull(stream, pull.drain(function(data) {
             console.log("Drain...")
             console.log(data)
+
+            const payload = JSON.parse(data.value)
             addMessage(
-                data.value.feed + ": " + data.value.value.message
+                payload.feedId + ": " + payload.message
             )
         }))
 

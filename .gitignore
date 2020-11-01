@@ -1,6 +1,5 @@
 #~top ignores~
 node_modules/
-*.css
 *.vim
 *bundle*.js
 /html/*.html

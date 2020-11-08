@@ -7,7 +7,7 @@ const pump = require("pump")
 const key = "13379ad64e284691b7c6f6310e39204b5f92765e36102046caaa6a7ff8c02d74"
 const discoveryKey = crypto.discoveryKey(Buffer.from(key, 'hex'))
 
-const swarm = hyperswarm()
+const swarm = hyperswarm({ bootstrap: ["ws://swarm.cblgh.org:8999"] })
 
 console.log("About to load kappa-core")
 const kappa = require('kappa-core')
@@ -99,7 +99,8 @@ core.use('kv', chatView)
 
 function addMessage (msg) {
     const prev = document.getElementById("chat").textContent 
-    document.getElementById("chat").textContent = prev + "\n" + msg
+    // place new messages at the top, so we don't have to attach autoscrolling javascript to the textarea
+    document.getElementById("chat").textContent = msg + "\n" + prev 
 }
 
 function setName (name) {

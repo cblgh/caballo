@@ -1,6 +1,14 @@
+const urlParams = new URLSearchParams(window.location.search);
+const useRamStorage = urlParams.get('ram') && urlParams.get('ram').toLowerCase() == "true"
+
+console.log("Using RAM storage: " + useRamStorage)
+
 const hyperswarm = require("hyperswarm-web")
 const crypto = require("hypercore-crypto")
+
 const ram = require("random-access-memory")
+const RAW = require("random-access-web")
+
 const hypercore = require("hypercore")
 const pump = require("pump")
 
@@ -9,25 +17,23 @@ const discoveryKey = crypto.discoveryKey(Buffer.from(key, 'hex'))
 
 const swarm = hyperswarm({ bootstrap: ["ws://swarm.cblgh.org:8999"] })
 
-console.log("About to load kappa-core")
 const kappa = require('kappa-core')
-console.log("Loaded kappa-core")
 
 const view = require('kappa-view')
 
-console.log("Initialising kappa-core")
-const core = kappa(ram, { valueEncoding: 'json' })
-console.log("Finished initialising kappa-core")
+const kappaStore = useRamStorage ? ram : RAW("caballo")
+const core = kappa(kappaStore, { valueEncoding: 'json' })
 
-const toPull = require('stream-to-pull-stream')
 const pull = require('pull-stream')
 
-var levelup = require('levelup')
-var leveljs = require('level-js')
+const levelup = require('levelup')
+const leveljs = require('level-js')
 
-var store = levelup(leveljs("bigdata"))
+const memdb = require('memdb')
 
-var Pushable = require('pull-pushable')
+const store = useRamStorage ? memdb() : levelup(leveljs("bigdata"))
+
+const Pushable = require('pull-pushable')
 
 function makeMessageModel(messageText) {
     return {
@@ -126,22 +132,27 @@ function initiate () {
     })
 
     core.writer('default', function(err, writer) {
-        const pubkey = writer.key.toString("hex")
-        setName(pubkey.slice(0, 8))
-        console.log("my feed key is", pubkey)
+        if (err) {
+            console.log("Error which loading core writer.")
+            console.log("ERROR: " + err.message + " name: " + err.name)
+        } else {
+            const pubkey = writer.key.toString("hex")
+            setName(pubkey.slice(0, 8))
+            console.log("my feed key is", pubkey)
+        
+            swarm.join(discoveryKey, { lookup: true, announce: true })
+            swarm.on("connection", (socket, info) => {
+                console.log("connection!")
+                const peer = info.peer
+                const r = core.replicate(info.client)
+        
+                pump(socket, r, socket, (err) => {
+                    if (err) console.error("ERROR", err)
+                })        
+            })
     
-        swarm.join(discoveryKey, { lookup: true, announce: true })
-        swarm.on("connection", (socket, info) => {
-            console.log("connection!")
-            const peer = info.peer
-            const r = core.replicate(info.client)
-    
-            pump(socket, r, socket, (err) => {
-                if (err) console.error("ERROR", err)
-            })        
-        })
-
-        addMessageSendHandler(writer)
+            addMessageSendHandler(writer)
+        }
     })
 
     function addMessageSendHandler(writer) {

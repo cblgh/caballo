@@ -15,7 +15,7 @@ const pump = require("pump")
 const key = "13379ad64e284691b7c6f6310e39204b5f92765e36102046caaa6a7ff8c02d74"
 const discoveryKey = crypto.discoveryKey(Buffer.from(key, 'hex'))
 
-const swarm = hyperswarm({ bootstrap: ["ws://swarm.cblgh.org:8999"] })
+const swarm = hyperswarm({ bootstrap: ["wss://swarm.cblgh.org"] })
 
 const kappa = require('kappa-core')
 

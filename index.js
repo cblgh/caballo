@@ -9,7 +9,6 @@ const crypto = require("hypercore-crypto")
 const ram = require("random-access-memory")
 const RAW = require("random-access-web")
 
-const hypercore = require("hypercore")
 const pump = require("pump")
 
 const key = "13379ad64e284691b7c6f6310e39204b5f92765e36102046caaa6a7ff8c02d74"
@@ -18,11 +17,20 @@ const discoveryKey = crypto.discoveryKey(Buffer.from(key, 'hex'))
 const swarm = hyperswarm({ bootstrap: ["wss://swarm.cblgh.org"] })
 
 const kappa = require('kappa-core')
-
 const view = require('kappa-view')
 
 const kappaStore = useRamStorage ? ram : RAW("caballo")
 const core = kappa(kappaStore, { valueEncoding: 'json' })
+
+const Cabal = require("cabal-core")
+const cabalStorage = useRamStorage ? ram : RAW("caballo-cabal")
+const cabal = Cabal(cabalStorage)
+
+cabal.ready(() => {
+  cabal.getLocalKey((err, localkey) => {
+    console.log("hey bruv caal-core is alive, the local key is ", localkey) 
+  })
+})
 
 const pull = require('pull-stream')
 
@@ -43,6 +51,8 @@ function makeMessageModel(messageText) {
 }
 
 console.log("About to intialise view")
+
+// todo: remove entire view?
 var chatView = view(store, function (db) {
 
     return {
@@ -57,7 +67,7 @@ var chatView = view(store, function (db) {
                 const entry = {
                     type: 'put',
                     // level DB sorts lexigraphically for streams, so we store by date and the coreId to make it unique
-                    // todo: think of edge cases
+                    // old todo: think of edge cases
                     key: value.date + coreId,
                     value: JSON.stringify(value)
                 }
@@ -75,6 +85,7 @@ var chatView = view(store, function (db) {
 
                 const p = Pushable()
 
+              // TODO: replace db.createReadStream with cabal.messages.read(channel, opts)
                 db.createReadStream({live: true })
                     .on('data', function (data) {
                         p.push(data)
@@ -114,7 +125,7 @@ function setName (name) {
 }
 
 function initiate () {
-
+    // todo: replace with rs = cabal.messages.read(channel, opts)
     core.api.kv.getMessageStream(function(err, stream) {
         console.log("Subbing to DB stream of messages")
 
@@ -161,6 +172,7 @@ function initiate () {
         node.addEventListener("keyup", function(event) {
             if (event.key === "Enter") {
                 console.log("Adding my own message to core!")
+                // TODO: replace with cabal.publish(message, opts, cb)
 
                 const messageText = node.value
                 const messageValue = makeMessageModel(messageText)

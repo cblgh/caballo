@@ -19,6 +19,7 @@
   "homepage": "https://github.com/cblgh/caballo#readme",
   "dependencies": {
     "browserify": "^17.0.0",
+    "cabal-core": "^13.2.0",
     "hypercore": "^9.5.7",
     "hypercore-crypto": "^2.1.1",
     "hyperswarm-web": "^2.1.1",

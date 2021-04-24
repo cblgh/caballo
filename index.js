@@ -56,7 +56,7 @@ function initiate () {
   }
 
   // load historic data onto page
-  const rs = cabal.messages.read("default")
+  const rs = cabal.messages.read("default", { reverse: false })
   rs.on("data", handleMessage) 
 
   cabal.messages.events.on("default", handleMessage)

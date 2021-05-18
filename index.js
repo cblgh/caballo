@@ -5,10 +5,14 @@ const Cabal = require("cabal-core")
 
 const urlParams = new URLSearchParams(window.location.search)
 const useRamStorage = urlParams.get('ram') && urlParams.get('ram').toLowerCase() == "true"
-console.log("Using RAM storage: " + useRamStorage)
+if (useRamStorage) { console.log("Using RAM storage") }
 
-const key = "13379ad64e284691b7c6f6310e39204b5f92765e36102046caaa6a7ff8c02d74"
+let key = urlParams.get('key') || "13379ad64e284691b7c6f6310e39204b5f92765e36102046caaa6a7ff8c02d74"
 const hyperswarmWebOpts = { bootstrap: ["wss://swarm.cblgh.org"] }
+// TODO: expand default bootstrap list to multiple confirmed & reliable nodes
+if (urlParams.get('bootstrap')) {
+  hyperswarmWebOpts.bootstrap = ["wss://swarm.cblgh.org"].concat(urlParams.get("bootstrap"))
+}
 const cabalStorage = useRamStorage ? ram : RAW("caballo-cabal")
 const cabal = Cabal(cabalStorage, key)
 

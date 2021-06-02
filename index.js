@@ -1,32 +1,29 @@
 const hyperswarm = require("hyperswarm-web")
-const RAW = require("random-access-web")
-const ram = require("random-access-memory")
-const Cabal = require("cabal-core")
+const Client = require("cabal-client")
 
 const urlParams = new URLSearchParams(window.location.search)
 const useRamStorage = urlParams.get('ram') && urlParams.get('ram').toLowerCase() == "true"
+const RAW = require("random-access-web")
 if (useRamStorage) { console.log("Using RAM storage") }
 
 let key = urlParams.get('key') || "13379ad64e284691b7c6f6310e39204b5f92765e36102046caaa6a7ff8c02d74"
 const hyperswarmWebOpts = { bootstrap: ["wss://swarm.cblgh.org"] }
+const client = new Client({ config: { storage: RAW("caballo"+key), swarm: hyperswarmWebOpts, dbdir: "caballo"+key, temp: useRamStorage }})
+
 // TODO: expand default bootstrap list to multiple confirmed & reliable nodes
 if (urlParams.get('bootstrap')) {
   hyperswarmWebOpts.bootstrap = ["wss://swarm.cblgh.org"].concat(urlParams.get("bootstrap"))
 }
-const cabalStorage = useRamStorage ? ram : RAW("caballo-cabal")
-const cabal = Cabal(cabalStorage, key)
 
-console.log("cabal, before ready")
-cabal.ready(() => {
-  console.log("cabal ready")
+client.addCabal(key, { swarm: hyperswarmWebOpts }).then((details) => {
   // start pulling down information :>
-  initiate()
-  cabal.getLocalKey((err, localkey) => {
-    console.log("hey cabal-core is alive, my local key is ", localkey) 
-    setName(localkey.slice(0, 8))
+  console.log("cabal is ready")
+  initiate(details)
+  details.getLocalUser((user) => {
+    setName(user.key.slice(0, 8))
   })
 
-  cabal.on("peer-added", (k) => {
+  details.on("started-peering", (k) => {
     console.log("new peer", k)
   })
 })
@@ -51,34 +48,30 @@ function setName (name) {
     document.getElementById("name").value = name
 }
 
-function initiate () {
-  console.log("cabal-web initiating")
-
-  function handleMessage (message) {
-    const text = message.value.content.text
-    addMessage(message.key.slice(0, 8) + ": " + text)
+function initiate (details) {
+  function handleMessage (env) {
+    if (!env || !env.message || !env.message.key) return
+    const message = env.message
+    let name = message.key.slice(0, 8)
+    if (env.author && env.author.name && env.author.name.length < 60) name = env.author.name
+    const text = `[${env.channel}] ${name}: ${message.value.content.text}`
+    addMessage(text)
   }
 
   // load historic data onto page
-  const rs = cabal.messages.read("default", { reverse: false })
+  const rs = details._cabal.messages.read("default", { reverse: false })
   rs.on("data", handleMessage) 
-
-  cabal.messages.events.on("default", handleMessage)
-
-  cabal.swarm(hyperswarmWebOpts)
-  console.log("cabal-web finished initiating")
-  addMessageSendHandler()
+  details.on("new-message", handleMessage)
+  addMessageSendHandler(details)
 }
 
-function addMessageSendHandler() {
+function addMessageSendHandler(details) {
   const chatbox = document.getElementById("input")
-  console.log("adding key listener on message input box")
   chatbox.addEventListener("keyup", function(event) {
     if (event.key === "Enter") {
-      console.log("adding mine own message to cabal-core!")
       const messageText = chatbox.value
       // publish to swarm
-      cabal.publish(makeMessage(messageText))
+      details.publishMessage(makeMessage(messageText))
       const key = document.getElementById("name").value
       // clear chat box
       chatbox.value = ""

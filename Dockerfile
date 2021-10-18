@@ -10,7 +10,7 @@ RUN npm i
 # Bundle yr source code inside the docker image
 COPY . .
 
-EXPOSE 7331
+EXPOSE 4977
 
 # Starting command for the container
 CMD ["npm", "start"]

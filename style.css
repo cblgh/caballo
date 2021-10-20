@@ -10,7 +10,7 @@ body {
 }
 
 h1 {
-    font-size: 48pt;
+    font-size: 2rem;
 }
 
 #logo {
@@ -24,6 +24,7 @@ textarea, input {
 	background: #111;
 	border: #f2f2f2 solid 1px;
 	padding: 0.25rem;
+    font-size: 1rem;
 }
 
 #chat {
@@ -40,7 +41,6 @@ textarea, input {
 	font-size: 0.75rem;
 }
 
-
 #input {
 	width: calc(100vw - 4rem - 2rem - 10rem);
 	padding: 1rem;
@@ -48,4 +48,33 @@ textarea, input {
 	bottom: 2rem;
 	position: absolute;
 	margin-left: 10.5rem;
+}
+
+/* MOBILE / IPHONE 5S/SE*/
+@media only screen 
+and (min-device-width : 320px) 
+and (max-device-width : 667px)
+{
+    html {
+        font-size: 36pt;
+        line-height: 1.5;
+    }
+
+    body { 
+        max-width: 19rem; 
+        margin: 1rem auto 6rem auto;
+        margin-top: 1rem !important;
+    }
+
+    #logo {
+        position: fixed;
+        right: 1rem;
+        top: 1rem;
+    }
+
+    #chat {
+        width: calc(100vw - 4rem);
+        height: calc(100vh - 13rem);
+        resize: none;
+    }
 }

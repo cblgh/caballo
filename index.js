@@ -3,13 +3,13 @@ const Client = require("cabal-client")
 
 const urlParams = new URLSearchParams(window.location.search)
 const useRamStorage = urlParams.get('ram') && urlParams.get('ram').toLowerCase() == "true"
-const RAW = require("random-access-web")
 if (useRamStorage) { log("Using RAM storage") }
+
 const DEBUG_STUFF = true
 
 let key = urlParams.get('key') || "13379ad64e284691b7c6f6310e39204b5f92765e36102046caaa6a7ff8c02d74"
 const hyperswarmWebOpts = { bootstrap: ["wss://swarm.cblgh.org"] }
-const client = new Client({ config: { storage: RAW("caballo"+key), swarm: hyperswarmWebOpts, dbdir: "caballo"+key, temp: useRamStorage }})
+const client = new Client({ config: { swarm: hyperswarmWebOpts, dbdir: "caballo"+key, temp: useRamStorage }})
 
 function log () {
   if (DEBUG_STUFF) {
@@ -87,9 +87,10 @@ function initiate (details) {
   rs.on("data", handleMessage) 
   details.on("new-message", handleEnvelope)
   addMessageSendHandler(details)
+  addNickChangeHandler(details)
 }
 
-function addMessageSendHandler(details) {
+function addMessageSendHandler (details) {
   const chatbox = document.getElementById("input")
   chatbox.addEventListener("keyup", function(event) {
     if (event.key === "Enter") {
@@ -99,6 +100,28 @@ function addMessageSendHandler(details) {
       const key = document.getElementById("name").value
       // clear chat box
       chatbox.value = ""
+    }
+  })
+}
+
+function addNickChangeHandler (details) {
+  const nickbox = document.getElementById("name")
+  let nickname = nickbox.value
+
+  // trigger publish of new nick when chatter navigates away from the nick box
+  nickbox.addEventListener("blur", () => {
+    console.log("bluur")
+    if (nickbox.value !== nickname) {
+      details.publishNick(nickbox.value)
+      nickname = nickbox.value
+    }
+  })
+
+  nickbox.addEventListener("keyup", function(event) {
+    if (event.key === "Enter") {
+      // publish new nick to swarm
+      details.publishNick(nickbox.value)
+      nickname = nickbox.value
     }
   })
 }

@@ -110,7 +110,6 @@ function addNickChangeHandler (details) {
 
   // trigger publish of new nick when chatter navigates away from the nick box
   nickbox.addEventListener("blur", () => {
-    console.log("bluur")
     if (nickbox.value !== nickname) {
       details.publishNick(nickbox.value)
       nickname = nickbox.value

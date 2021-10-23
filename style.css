@@ -29,7 +29,7 @@ textarea, input {
 
 #chat {
     width: calc(100vw - 4rem);
-    height: calc(100vh - 17rem);
+    height: calc(100vh - 13rem);
 	resize: none;
 }
 
@@ -61,8 +61,7 @@ and (max-device-width : 667px)
     }
 
     body { 
-        max-width: 19rem; 
-        margin: 1rem auto 6rem auto;
+        max-width: calc(100vw - 4rem)
         margin-top: 1rem !important;
     }
 
@@ -70,11 +69,5 @@ and (max-device-width : 667px)
         position: fixed;
         right: 1rem;
         top: 1rem;
-    }
-
-    #chat {
-        width: calc(100vw - 4rem);
-        height: calc(100vh - 13rem);
-        resize: none;
     }
 }

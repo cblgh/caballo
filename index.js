@@ -7,8 +7,12 @@ if (useRamStorage) { log("Using RAM storage") }
 
 const DEBUG_STUFF = true
 
-let key = urlParams.get('key') || "13379ad64e284691b7c6f6310e39204b5f92765e36102046caaa6a7ff8c02d74"
-const hyperswarmWebOpts = { bootstrap: ["wss://swarm.cblgh.org"] }
+const key = urlParams.get('key') || "13379ad64e284691b7c6f6310e39204b5f92765e36102046caaa6a7ff8c02d74"
+let bootstrap = ["wss://swarm.cblgh.org", "wss://hyperswarm.linkping.org"]
+if (urlParams.get('bootstrap')) {
+  bootstrap = bootstrap.concat(urlParams.get("bootstrap"))
+}
+const hyperswarmWebOpts = { bootstrap }
 const client = new Client({ config: { swarm: hyperswarmWebOpts, dbdir: "caballo"+key, temp: useRamStorage }})
 
 function log () {
@@ -17,12 +21,7 @@ function log () {
   }
 }
 
-// TODO: expand default bootstrap list to multiple confirmed & reliable nodes
-if (urlParams.get('bootstrap')) {
-  hyperswarmWebOpts.bootstrap = ["wss://swarm.cblgh.org"].concat(urlParams.get("bootstrap"))
-}
-
-client.addCabal(key, { swarm: hyperswarmWebOpts }).then((details) => {
+client.addCabal(key).then((details) => {
   // start pulling down information :>
   log("cabal is ready")
   initiate(details)
